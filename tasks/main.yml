@@ -1,0 +1,18 @@
+---
+- name: Check if spideroak is installed
+  command: dpkg-query -W "{{spideroak_deb_name}}"
+  register: spideroak_check_deb
+  failed_when: spideroak_check_deb.rc > 1
+  changed_when: spideroak_check_deb.rc == 1
+- name: Download spideroak
+  get_url: 
+    url="{{ spideroak_url }}"
+    dest="/tmp/{{ spideroak_package_name }}"
+  when: spideroak_check_deb.rc == 1 
+- name: Install spideroak
+  apt: deb="/tmp/{{ spideroak_package_name }}"
+  sudo: true
+  when: spideroak_check_deb.rc == 1
+- name: Remove temp deb file
+  file: path="/tmp/{{ spideroak_package_name }}" state=absent
+  when: spideroak_check_deb.rc == 1
